@@ -4,15 +4,15 @@ import java.util.Arrays;
 
 public class IntegerListImpl implements IntegerList {
     int size;
-    final private Integer[] IntegersList;
+    private Integer[] integerList;
     static final int MAX_SIZE = 100000;
 
     public IntegerListImpl(int size) {
-        this.IntegersList = new Integer[size];
+        this.integerList = new Integer[size];
     }
 
     public IntegerListImpl() {
-        this.IntegersList = new Integer[MAX_SIZE];
+        this.integerList = new Integer[MAX_SIZE];
     }
 
 
@@ -21,8 +21,9 @@ public class IntegerListImpl implements IntegerList {
     // в качестве результата выполнения.
     public Integer add(Integer item) {
         validateItem(item);
-        validateSize();
-        IntegersList[size++] = item;
+        //validateSize();
+        growIfNeeded();
+        integerList[size++] = item;
         return item;
     }
 
@@ -34,15 +35,16 @@ public class IntegerListImpl implements IntegerList {
     // Вернуть добавленный элемент
     // в качестве результата выполнения.
     public     Integer add(int index, Integer item) {
-        validateSize();
+        //validateSize();
+        growIfNeeded();
         validateIndex(index);
         validateItem(item);
         if (index == size) {
-            IntegersList[size++] = item;
+            integerList[size++] = item;
             return item;
         }
-        System.arraycopy(IntegersList,index,IntegersList,index+1,size-index);
-        IntegersList[index] = item;
+        System.arraycopy(integerList,index, integerList,index+1,size-index);
+        integerList[index] = item;
         size++;
         return item;
     }
@@ -57,7 +59,7 @@ public class IntegerListImpl implements IntegerList {
     public Integer set(int index, Integer item) {
         validateIndex(index);
         validateItem(item);
-        IntegersList[index] = item;
+        integerList[index] = item;
         return item;
     }
 
@@ -80,9 +82,9 @@ public class IntegerListImpl implements IntegerList {
         if (index == -1) {
             throw new ElementNotFindException();
         }
-        Integer item = IntegersList[index];
+        Integer item = integerList[index];
         if (index == size) {
-            System.arraycopy(IntegersList,index+1,IntegersList,index,size-index);
+            System.arraycopy(integerList,index+1, integerList,index,size-index);
         }
 
         size--;
@@ -103,7 +105,7 @@ public class IntegerListImpl implements IntegerList {
     // или -1 в случае отсутствия.
     public int indexOf(Integer item) {
         for (int i = 0; i < size; i++) {
-            if (IntegersList[i].equals(item)) {
+            if (integerList[i].equals(item)) {
                 return i;
             }
         }
@@ -115,7 +117,7 @@ public class IntegerListImpl implements IntegerList {
     // или -1 в случае отсутствия.
     public int lastIndexOf(Integer item) {
         for (int i = size - 1; i >= 0; i--) {
-            if (IntegersList[i].equals(item)) {
+            if (integerList[i].equals(item)) {
                 return i;
             }
         }
@@ -128,7 +130,7 @@ public class IntegerListImpl implements IntegerList {
     // количества элементов.
     public Integer get(int index) {
         validateIndex(index);
-        return IntegersList[index];
+        return integerList[index];
     }
 
     // Сравнить текущий список с другим.
@@ -159,7 +161,7 @@ public class IntegerListImpl implements IntegerList {
     // из строк в списке
     // и вернуть его.
     public Integer[] toArray() {
-        return Arrays.copyOf(IntegersList, size);
+        return Arrays.copyOf(integerList, size);
     }
 
     private void validateItem(Integer item) {
@@ -169,8 +171,14 @@ public class IntegerListImpl implements IntegerList {
     }
 
     private void validateSize() {
-        if (size == IntegersList.length) {
+        if (size == integerList.length) {
             throw new IntegerListIsFUllException();
+        }
+    }
+
+    private void growIfNeeded() {
+        if (size == integerList.length) {
+            grow();
         }
     }
 
@@ -180,6 +188,11 @@ public class IntegerListImpl implements IntegerList {
         }
     }
     private static void swapElements(int[] arr, int indexA, int indexB) {
+        int tmp = arr[indexA];
+        arr[indexA] = arr[indexB];
+        arr[indexB] = tmp;
+    }
+    private static void swapElements(Integer[] arr, int indexA, int indexB) {
         int tmp = arr[indexA];
         arr[indexA] = arr[indexB];
         arr[indexB] = tmp;
@@ -252,7 +265,7 @@ public class IntegerListImpl implements IntegerList {
         }
     }
 private void sort(Integer [] arr) {
-    for (int i = 1; i < arr.length; i++) {
+/*    for (int i = 1; i < arr.length; i++) {
         int temp = arr[i];
         int j = i;
         while (j > 0 && arr[j - 1] >= temp) {
@@ -260,7 +273,8 @@ private void sort(Integer [] arr) {
             j--;
         }
         arr[j] = temp;
-    }
+    }*/
+    quickSort(arr,0,arr.length - 1);
 }
     public static boolean bynarySearch(Integer[] arr, int item) {
         int min = 0;
@@ -281,4 +295,31 @@ private void sort(Integer [] arr) {
         }
         return false;
     }
+    private void grow() {
+        integerList = Arrays.copyOf(integerList, size + size / 2);
+    }
+    public static void quickSort(Integer[] arr, int begin, int end) {
+        if (begin < end) {
+            int partitionIndex = partition(arr, begin, end);
+
+            quickSort(arr, begin, partitionIndex - 1);
+            quickSort(arr, partitionIndex + 1, end);
+        }
+    }
+    private static int partition(Integer[] arr, int begin, int end) {
+        Integer pivot = arr[end];
+        Integer i = (begin - 1);
+
+        for (int j = begin; j < end; j++) {
+            if (arr[j] <= pivot) {
+                i++;
+
+                swapElements(arr, i, j);
+            }
+        }
+
+        swapElements(arr, i + 1, end);
+        return i + 1;
+    }
+
 }
